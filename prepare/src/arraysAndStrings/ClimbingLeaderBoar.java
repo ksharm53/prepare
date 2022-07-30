@@ -83,9 +83,6 @@ public class ClimbingLeaderBoar {
 					result.add(pq.peek().key);
 					pq.add(new Pair(pq.peek().key, player.get(i)));
 				}
-				/*
-				 * while (!stack.isEmpty()) { pq.add(stack.pop()); }
-				 */
 			}
 		}
 		return result;
