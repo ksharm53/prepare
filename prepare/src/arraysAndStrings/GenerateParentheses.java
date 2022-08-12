@@ -8,7 +8,7 @@ public class GenerateParentheses {
 	static List<String> output = new ArrayList<>();
 
 	public static void main(String[] args) {
-		int n = 3;
+		int n = 6;
 
 		int open = n;
 		int close = n;
