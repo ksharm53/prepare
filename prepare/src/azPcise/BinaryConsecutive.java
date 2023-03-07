@@ -3,7 +3,7 @@ package azPcise;
 public class BinaryConsecutive {
 
 	public static void main(String[] args) {
-		String s = "001101";
+		String s = "111000";
 		System.out.println(solve(s));
 
 	}

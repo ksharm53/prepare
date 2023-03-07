@@ -1,7 +1,7 @@
 package treeAndGraphs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -38,10 +38,10 @@ public class BinaryTreeLevelOrderTraversal {
 				if (null != queue.peek().right) {
 					queue.add(queue.peek().right);
 				}
-
 				tempList.add(queue.poll().val);
+								
 			}
-
+			
 			list.add(tempList);
 
 		}
