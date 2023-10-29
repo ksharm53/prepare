@@ -7,8 +7,8 @@ public class CoinChange {
 	public static int[][] matrix;
 
 	public static void main(String[] args) {
-		int[] coins = { 1, 2, 5 };
-		int amount = 11;
+		int[] coins = { 5, 8, 10, 6};
+		int amount = 24;
 
 		matrix = new int[coins.length + 1][amount + 1];
 		for (int[] i : matrix) {

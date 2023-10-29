@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.Stack;
 
 public class BlackRockCurrencyExchange {
-	
 
 	public static class Pair {
 		String from;
@@ -38,68 +37,87 @@ public class BlackRockCurrencyExchange {
 	}
 
 	public static void main(String[] args) {
-		String exchange = "USD,CAD,1.3;USD,GBP,0.71;USD,JPY,109;GBP,JPY,155";
-		// String exchange =
-		// "USD,GBP,0.7;USD,JPY,109;GBP,JPY,155;CAD,CNY,5.27;CAD,KRW,921";
+		// String exchange = "USD,CAD,1.3;USD,GBP,0.71;USD,JPY,109;GBP,JPY,155";
+		String exchange = "USD,GBP,0.7;USD,JPY,109;GBP,JPY,155;CAD,CNY,5.27;CAD,KRW,921";
 		String from = "USD";
-		String to = "JPY";
-		System.out.println(solve(exchange, from, to));
+		String to = "CNY";
+		// System.out.println(solve(exchange, from, to));
+
+		System.out.println(solveAgain(exchange, from, to));
 	}
 
-	private static double solve(String exchange, String from, String to) {
-		String[] exchangeArray = exchange.split(";");
+	private static double solveAgain(String exchange, String from, String to) {
+		Map<String, Map<String, Double>> currencyMap = parseRates(exchange);
 
-		Map<String, Map<String, Double>> graph = createGraph(exchangeArray);
+		// Calculate the maximum amount of the target currency
+		double result = calculateMaximumAmount(from, to, currencyMap);
 
-		return fetchData(graph, from, to);
-	}
-
-	private static double fetchData(Map<String, Map<String, Double>> graph, String from, String to) {
-		double rate = -1.0;
-		if (!graph.containsKey(from) || !graph.containsKey(to)) {
-			return rate;
-		}
-		Stack<Pair> stack = new Stack<>();
-		stack.push(new Pair(from, 1.0));
-
-		Set<String> set = new HashSet<>();
-
-		while (!stack.isEmpty()) {
-			Pair each = stack.pop();
-			String currency = each.getFrom();
-			double exch = each.getRate();
-
-			if (currency.equals(to)) {
-				rate = Math.max(rate, exch);
-			}
-			if (set.contains(currency)) {
-				continue;
-			}
-			set.add(currency);
-
-			for (Entry<String, Double> eachEntry : graph.get(currency).entrySet()) {
-				if (!set.contains(eachEntry.getKey())) {
-					stack.push(new Pair(eachEntry.getKey(), exch * eachEntry.getValue()));
-				}
-			}
-		}
-
-		return rate;
+		return result;
 
 	}
 
-	private static Map<String, Map<String, Double>> createGraph(String[] exchangeArray) {
-		Map<String, Map<String, Double>> map = new HashMap<>();
+	private static Map<String, Map<String, Double>> parseRates(String rates) {
+		Map<String, Map<String, Double>> currencyMap = new HashMap<>();
+		String[] ratePairs = rates.split(";");
 
-		for (String eachExchange : exchangeArray) {
-			String[] innerArray = eachExchange.split(",");
-			map.putIfAbsent(innerArray[0], new HashMap<>());
-			map.get(innerArray[0]).put(innerArray[1], Double.valueOf(innerArray[2]));
+		for (String ratePair : ratePairs) {
+			String[] currencies = ratePair.trim().split(",");
+			String sourceCurrency = currencies[0].trim();
+			String targetCurrency = currencies[1].trim();
+			double exchangeRate = Double.parseDouble(currencies[2].trim());
 
-			map.putIfAbsent(innerArray[1], new HashMap<>());
-			map.get(innerArray[1]).put(innerArray[0], 1 / Double.valueOf(innerArray[2]));
+			currencyMap.putIfAbsent(sourceCurrency, new HashMap<>());
+			currencyMap.get(sourceCurrency).put(targetCurrency, exchangeRate);
+
+			currencyMap.putIfAbsent(targetCurrency, new HashMap<>());
+			currencyMap.get(targetCurrency).put(sourceCurrency, 1 / exchangeRate);
 		}
-		return map;
+
+		return currencyMap;
+	}
+
+	private static double calculateMaximumAmount(String selectedCurrency, String targetCurrency,
+			Map<String, Map<String, Double>> currencyMap) {
+		if (!currencyMap.containsKey(selectedCurrency) || !currencyMap.containsKey(targetCurrency)) {
+			return -1.0;
+		}
+
+		if (selectedCurrency.equals(targetCurrency)) {
+			return 1.0;
+		}
+
+		Set<String> visitedCurrencies = new HashSet<>();
+		return dfs(selectedCurrency, targetCurrency, currencyMap, 1.0, visitedCurrencies);
+	}
+
+	private static double dfs(String currentCurrency, String targetCurrency,
+			Map<String, Map<String, Double>> currencyMap, double amount, Set<String> visitedCurrencies) {
+		if (currentCurrency.equals(targetCurrency)) {
+			return amount;
+		}
+
+		Map<String, Double> exchangeRates = currencyMap.get(currentCurrency);
+		double maxAmount = -1.0;
+
+		visitedCurrencies.add(currentCurrency); // Mark the current currency as visited
+
+		for (String nextCurrency : exchangeRates.keySet()) {
+			if (visitedCurrencies.contains(nextCurrency)) {
+				continue; // Skip currencies that have been visited already (to avoid loops)
+			}
+
+			double rate = exchangeRates.get(nextCurrency);
+			double nextAmount = amount * rate;
+			double result = dfs(nextCurrency, targetCurrency, currencyMap, nextAmount, visitedCurrencies);
+
+			if (result != -1.0 && result > maxAmount) {
+				maxAmount = result;
+			}
+		}
+
+		visitedCurrencies.remove(currentCurrency); // Remove the current currency from visited currencies
+
+		return maxAmount;
 	}
 
 }
