@@ -90,7 +90,7 @@ public class Test {
 				try {
 					return Integer.parseInt(input.substring(startIndex + pattern.length(), endIndex));
 				} catch (NumberFormatException e) {
-					// Handle invalid integer as needed
+
 				}
 			}
 		}
